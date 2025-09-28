@@ -76,7 +76,7 @@
 <h1>Image Puzzle Challenge</h1>
 
 <div id="upload-container">
-  <input type="file" id="image-upload" accept="image/*">
+  <button id="uploadBtn">Upload Image</button>
   <select id="difficulty-select">
     <option value="easy">Easy (3x3)</option>
     <option value="medium">Medium (4x4)</option>
@@ -91,13 +91,12 @@
   <p id="score">Score: 0</p>
   <p id="message"></p>
 </div>
-<!-- Firebase App (core SDK) -->
-<script src="https://www.gstatic.com/firebasejs/10.16.0/firebase-app-compat.js"></script>
-<!-- Firebase Storage -->
-<script src="https://www.gstatic.com/firebasejs/10.16.0/firebase-storage-compat.js"></script>
+
+<!-- Cloudinary Widget JS -->
+<script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
 
 <script>
-const uploadInput = document.getElementById('image-upload');
+const uploadBtn = document.getElementById('uploadBtn');
 const startButton = document.getElementById('start-game');
 const difficultySelect = document.getElementById('difficulty-select');
 const gameBoard = document.getElementById('game-board');
@@ -113,21 +112,33 @@ let timer;
 let score = 0;
 let difficultyMultiplier = 1;
 
+// Cloudinary Upload Widget
+const myWidget = cloudinary.createUploadWidget({
+  cloudName: 'daqtte8go',        // your Cloud name
+  uploadPreset: 'user_uploads',  // your unsigned preset
+  folder: 'user_images',
+  multiple: false
+}, (error, result) => {
+  if (!error && result && result.event === "success") {
+    console.log('Uploaded URL:', result.info.secure_url);
+    img = new Image();
+    img.src = result.info.secure_url;
+    img.onload = () => alert("Image uploaded! Now click Start Game.");
+  }
+});
+
+uploadBtn.addEventListener('click', () => {
+  myWidget.open();
+});
+
 startButton.addEventListener('click', () => {
-  const file = uploadInput.files[0];
-  if (!file) { alert("Please upload an image."); return; }
+  if (!img) { alert("Please upload an image first."); return; }
   const difficulty = difficultySelect.value;
   if(difficulty === "easy") { gridSize = 3; difficultyMultiplier = 1; time = 60; }
   else if(difficulty === "medium") { gridSize = 4; difficultyMultiplier = 2; time = 90; }
   else { gridSize = 5; difficultyMultiplier = 3; time = 120; }
 
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    img = new Image();
-    img.src = e.target.result;
-    img.onload = () => startPuzzle(img);
-  };
-  reader.readAsDataURL(file);
+  startPuzzle(img);
 });
 
 function startPuzzle(image) {
@@ -138,7 +149,6 @@ function startPuzzle(image) {
   scoreDisplay.textContent = `Score: ${score}`;
   gameBoard.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
 
-  // Create pieces
   const pieceWidth = 100;
   const pieceHeight = 100;
   for (let y=0; y<gridSize; y++){
@@ -147,14 +157,14 @@ function startPuzzle(image) {
       canvas.width = pieceWidth;
       canvas.height = pieceHeight;
       const ctx = canvas.getContext('2d');
-      ctx.drawImage(image, x*image.width/gridSize, y*image.height/gridSize, image.width/gridSize, image.height/gridSize, 0,0,pieceWidth,pieceHeight);
+      ctx.drawImage(image, x*image.width/gridSize, y*image.height/gridSize, image.width/gridSize, y*image.height/gridSize, 0,0,pieceWidth,pieceHeight);
       canvas.classList.add('puzzle-piece');
       canvas.dataset.correctIndex = y*gridSize + x;
       pieces.push(canvas);
     }
   }
 
-  // Shuffle
+  // Shuffle pieces
   pieces = pieces.sort(() => Math.random() - 0.5);
   pieces.forEach(piece => gameBoard.appendChild(piece));
 
@@ -177,7 +187,6 @@ function updateTimerBar(){
 
 function enableDragDrop(){
   let dragged = null;
-
   pieces.forEach(piece => {
     piece.setAttribute('draggable', true);
 
