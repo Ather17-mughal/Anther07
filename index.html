@@ -74,7 +74,7 @@
 </head>
 <body>
 
-<audio id="bg-music" src="https://pixabay.com/music/soft-calm-piano-music-12345.mp3" loop></audio>
+<audio id="bg-music" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" loop></audio>
 <audio id="celebration-sound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
 
 <h1>Image Puzzle Challenge</h1>
@@ -96,7 +96,7 @@
   <button id="retry-btn">Retry</button>
 </div>
 
-<script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
+<script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <script>
@@ -115,7 +115,6 @@ let gridSize = 3;
 let pieces = [];
 let time = 60;
 let timer;
-let solved = false;
 
 const myWidget = cloudinary.createUploadWidget({
   cloudName: 'daqtte8go',
@@ -134,7 +133,8 @@ uploadBtn.addEventListener('click', () => myWidget.open());
 
 startButton.addEventListener('click', () => {
   if (!img) { alert("Please upload an image first."); return; }
-  bgMusic.play();
+  bgMusic.volume = 0.2;
+  bgMusic.play().catch(()=>{});
   startButton.disabled = true;
   retryButton.style.display = 'none';
   const difficulty = difficultySelect.value;
@@ -145,7 +145,6 @@ startButton.addEventListener('click', () => {
 });
 
 retryButton.addEventListener('click', () => {
-  solved = false;
   startButton.disabled = false;
   retryButton.style.display = 'none';
   messageDisplay.textContent = '';
@@ -218,11 +217,22 @@ function checkPuzzle(){
   const solved = currentPieces.every((p,i)=> Number(p.dataset.correctIndex) === i);
   if(solved){
     clearInterval(timer);
-    celebrationSound.play();
     bgMusic.pause();
+    bgMusic.currentTime = 0;
+    celebrationSound.volume = 0.5;
+    celebrationSound.play().catch(()=>{});
+    launchConfetti();
     messageDisplay.textContent = "🎉 Puzzle Solved!";
     retryButton.style.display = 'inline-block';
   }
+}
+
+function launchConfetti(){
+  confetti({
+    particleCount: 150,
+    spread: 70,
+    origin: { y: 0.6 }
+  });
 }
 </script>
 </body>
