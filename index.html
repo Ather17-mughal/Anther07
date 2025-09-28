@@ -74,7 +74,7 @@
 </head>
 <body>
 
-<audio id="bg-music" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" loop autoplay></audio>
+<audio id="bg-music" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" loop></audio>
 
 <h1>Image Puzzle Challenge</h1>
 
@@ -106,6 +106,7 @@ const gameBoard = document.getElementById('game-board');
 const timerProgress = document.getElementById('timer-progress');
 const messageDisplay = document.getElementById('message');
 const scoreDisplay = document.getElementById('score');
+const bgMusic = document.getElementById('bg-music');
 
 let img = null;
 let gridSize = 3;
@@ -132,6 +133,7 @@ uploadBtn.addEventListener('click', () => myWidget.open());
 
 startButton.addEventListener('click', () => {
   if (!img) { alert("Please upload an image first."); return; }
+  bgMusic.play();
   const difficulty = difficultySelect.value;
   if(difficulty === "easy") { gridSize = 3; difficultyMultiplier = 1; time = 60; }
   else if(difficulty === "medium") { gridSize = 4; difficultyMultiplier = 2; time = 90; }
