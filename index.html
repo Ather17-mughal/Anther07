@@ -34,17 +34,18 @@
   }
   button:hover { background: #ff3b2e; }
   #game-container {
-    margin-top: 20px;
-    display: inline-block;
+    margin: 20px auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     background: rgba(0,0,0,0.6);
-    padding: 10px;
+    padding: 15px;
     border-radius: 10px;
   }
   #game-board {
     display: grid;
     gap: 2px;
     background: #000;
-    margin-top: 10px;
   }
   .puzzle-piece {
     cursor: grab;
@@ -57,7 +58,7 @@
     width: 80%;
     height: 20px;
     background: #555;
-    margin: 15px auto;
+    margin: 15px 0;
     border-radius: 10px;
     overflow: hidden;
   }
@@ -92,7 +93,6 @@
   <p id="message"></p>
 </div>
 
-<!-- Cloudinary Widget JS -->
 <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
 
 <script>
@@ -114,8 +114,8 @@ let difficultyMultiplier = 1;
 
 // Cloudinary Upload Widget
 const myWidget = cloudinary.createUploadWidget({
-  cloudName: 'daqtte8go',        // your Cloud name
-  uploadPreset: 'user_uploads',  // your unsigned preset
+  cloudName: 'daqtte8go',
+  uploadPreset: 'user_uploads',
   folder: 'user_images',
   multiple: false
 }, (error, result) => {
@@ -127,9 +127,7 @@ const myWidget = cloudinary.createUploadWidget({
   }
 });
 
-uploadBtn.addEventListener('click', () => {
-  myWidget.open();
-});
+uploadBtn.addEventListener('click', () => myWidget.open());
 
 startButton.addEventListener('click', () => {
   if (!img) { alert("Please upload an image first."); return; }
@@ -147,7 +145,8 @@ function startPuzzle(image) {
   gameBoard.innerHTML = '';
   messageDisplay.textContent = '';
   scoreDisplay.textContent = `Score: ${score}`;
-  gameBoard.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+  gameBoard.style.gridTemplateColumns = `repeat(${gridSize}, 100px)`;
+  gameBoard.style.gridTemplateRows = `repeat(${gridSize}, 100px)`;
 
   const pieceWidth = 100;
   const pieceHeight = 100;
@@ -157,14 +156,20 @@ function startPuzzle(image) {
       canvas.width = pieceWidth;
       canvas.height = pieceHeight;
       const ctx = canvas.getContext('2d');
-      ctx.drawImage(image, x*image.width/gridSize, y*image.height/gridSize, image.width/gridSize, y*image.height/gridSize, 0,0,pieceWidth,pieceHeight);
+      // Fixed drawImage: width/height corrected
+      ctx.drawImage(image, 
+        x*image.width/gridSize, 
+        y*image.height/gridSize, 
+        image.width/gridSize, 
+        image.height/gridSize, 
+        0,0,pieceWidth,pieceHeight
+      );
       canvas.classList.add('puzzle-piece');
       canvas.dataset.correctIndex = y*gridSize + x;
       pieces.push(canvas);
     }
   }
 
-  // Shuffle pieces
   pieces = pieces.sort(() => Math.random() - 0.5);
   pieces.forEach(piece => gameBoard.appendChild(piece));
 
